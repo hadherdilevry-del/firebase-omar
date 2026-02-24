@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CahtScreen extends StatefulWidget {
   static const screenRoute = 'caht_screen';
@@ -10,8 +11,10 @@ class CahtScreen extends StatefulWidget {
 }
 
 class _CahtScreenState extends State<CahtScreen> {
+  final _firestore = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   late User signedInUser;
+  String? messageText;
 
   @override
   void initState() {
@@ -47,7 +50,6 @@ class _CahtScreenState extends State<CahtScreen> {
         actions: [
           IconButton(
             onPressed: () {
-
               _auth.signOut();
               Navigator.pop(context);
             },
@@ -70,7 +72,9 @@ class _CahtScreenState extends State<CahtScreen> {
                 children: [
                   Expanded(
                     child: TextField(
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        messageText = value;
+                      },
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
                           vertical: 10,
@@ -82,7 +86,16 @@ class _CahtScreenState extends State<CahtScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _firestore.collection("messages").add({
+                        "text": messageText,
+                        "sender": signedInUser.email,
+                      
+                    });
+                      setState(() {
+                        messageText = "";
+                      });
+                    },
                     child: Text(
                       "Send",
                       style: TextStyle(
